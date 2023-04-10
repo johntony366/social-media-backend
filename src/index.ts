@@ -1,6 +1,7 @@
 const express = require("express");
 const cors = require("cors");
 const dotenv = require("dotenv");
+import { initDB } from "./db/initDB";
 
 const app = express();
 dotenv.config();
@@ -14,6 +15,9 @@ app.use(
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log("Backend server is up and running!");
+initDB();
+
+const port = process.env.PORT || 3000;
+app.listen(port, () => {
+  console.log(`Backend server is running on port ${process.env.PORT}`);
 });
