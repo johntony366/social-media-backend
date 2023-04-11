@@ -19,6 +19,7 @@ app.use(express.urlencoded({ extended: true }));
 initDB();
 
 app.use("/api/auth", require("./auth/auth.route"));
+app.use("/api/user", require("./user/user.route"));
 
 app.use(errorHandler);
 
