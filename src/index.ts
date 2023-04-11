@@ -5,6 +5,7 @@ import { errorHandler } from "./middleware/error.middleware";
 import { initDB } from "./db/initDB";
 import authRouter from "./routes/auth.route";
 import userRouter from "./routes/user.route";
+import postRouter from "./routes/post.route";
 
 const app = express();
 dotenv.config();
@@ -22,6 +23,7 @@ initDB();
 
 app.use("/api/auth", authRouter);
 app.use("/api/user", userRouter);
+app.use("/api/post", postRouter);
 
 app.use(errorHandler);
 

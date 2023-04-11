@@ -5,6 +5,7 @@ export interface UserSchema extends Document {
   username: string;
   email: string;
   password: string;
+  posts: Types.ObjectId[];
   followers: Types.ObjectId[];
   following: Types.ObjectId[];
 }
@@ -33,6 +34,7 @@ const userSchema = new Schema<UserSchema>(
       type: String,
       required: true,
     },
+    posts: [{ type: Schema.Types.ObjectId, ref: "Post" }],
     followers: [{ type: Schema.Types.ObjectId, ref: "User" }],
     following: [{ type: Schema.Types.ObjectId, ref: "User" }],
   },
