@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from "express";
+import { User } from "../models/user.model";
 const jwt = require("jsonwebtoken");
 const asyncHandler = require("express-async-handler");
-const User = require("../models/user.model");
 
 export interface ARequest extends Request {
   user: any;
@@ -23,7 +23,7 @@ export const protectJWT = asyncHandler(
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
         // Get user from the token, exclude password
-        req.user = await User.findById(decoded.id).select("-password");
+        req.user = await User.findById(decoded.user.id).select("-password");
 
         next();
       } catch (error) {

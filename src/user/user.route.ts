@@ -1,17 +1,26 @@
 import { Request, Response } from "express";
 import expressAsyncHandler from "express-async-handler";
-import { protectJWT } from "../middleware/auth.middleware";
+import { ARequest, protectJWT } from "../middleware/auth.middleware";
+import { User } from "../models/user.model";
 
 const router = require("express").Router();
 
 router.get(
   "/",
   protectJWT,
-  expressAsyncHandler(async (req: Request, res: Response) => {
-    res.send("Hello World!");
+  expressAsyncHandler(async (req: ARequest, res: Response) => {
+    const user = await User.findById(req.user);
+    res.status(200).json(user);
   })
 );
 
-router.get("/:id", async (req: Request, res: Response) => {});
+router.get(
+  "/:id",
+  expressAsyncHandler(async (req: Request, res: Response) => {
+    const user = await User.findById(req.params.id);
+    console.log(user);
+    res.status(200).json(user);
+  })
+);
 
 module.exports = router;
