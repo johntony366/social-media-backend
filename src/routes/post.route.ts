@@ -28,7 +28,7 @@ router.post(
     const userID = new Types.ObjectId(req.user.id);
     const user = await User.findById(userID);
 
-    const post = new Post({ author: user, title, content, likes: 0 });
+    const post = new Post({ author: user, title, content, likes: [] });
     await post.save();
     await User.updateOne({ _id: userID }, { $push: { posts: post } });
 
@@ -55,15 +55,31 @@ router.put(
   protectJWT,
   expressAsyncHandler(async (req: ARequest, res: Response) => {
     const { id } = req.params;
-    const userID = req.user.id;
+    // const userID = req.user.id;
 
     await Post.updateOne({ _id: id }, { $set: req.body });
-    await User.updateMany(
-      { _id: userID, posts: id },
-      { $set: { "posts.$": id } }
-    );
+    // await User.updateMany(
+    //   { _id: userID, posts: id },
+    //   { $set: { "posts.$": id } }
+    // );
 
     res.status(200).json({ msg: "Post updated" });
+  })
+);
+
+router.put(
+  "/:id/like",
+  protectJWT,
+  expressAsyncHandler(async (req: ARequest, res: Response) => {
+    const { id } = req.params;
+    const post = await Post.findById(id);
+    if (post.likes.includes(req.user.id)) {
+      await Post.updateOne({ _id: id }, { $pull: { likes: req.user.id } });
+      res.status(200).json({ msg: "Post unliked" });
+    } else {
+      await Post.updateOne({ _id: id }, { $push: { likes: req.user.id } });
+      res.status(200).json({ msg: "Post liked" });
+    }
   })
 );
 
