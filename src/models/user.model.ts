@@ -1,7 +1,15 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Document, Schema, Types } from "mongoose";
 import { isEmail } from "validator";
 
-const UserSchema = new Schema(
+export interface UserSchema extends Document {
+  username: string;
+  email: string;
+  password: string;
+  followers: Types.ObjectId[];
+  following: Types.ObjectId[];
+}
+
+const userSchema = new Schema<UserSchema>(
   {
     username: {
       type: String,
@@ -25,8 +33,10 @@ const UserSchema = new Schema(
       type: String,
       required: true,
     },
+    followers: [{ type: Schema.Types.ObjectId, ref: "User" }],
+    following: [{ type: Schema.Types.ObjectId, ref: "User" }],
   },
   { timestamps: true }
 );
 
-export const User = mongoose.model("User", UserSchema);
+export const User = mongoose.model<UserSchema>("User", userSchema);

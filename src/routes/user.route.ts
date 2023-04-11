@@ -1,9 +1,10 @@
 import bcrypt from "bcryptjs";
-import { Request, Response } from "express";
+import { Response } from "express";
 import expressAsyncHandler from "express-async-handler";
 import { ARequest, protectJWT } from "../middleware/auth.middleware";
 import { User } from "../models/user.model";
 import { Router } from "express";
+import { Document, Types } from "mongoose";
 
 const router = Router();
 
@@ -47,9 +48,80 @@ router.delete(
 
 router.get(
   "/:id",
-  expressAsyncHandler(async (req: Request, res: Response) => {
-    const user = await User.findById(req.params.id);
-    res.status(200).json(user);
+  protectJWT,
+  expressAsyncHandler(async (req: ARequest, res: Response) => {
+    const user: Document | null = await User.findById(req.params.id);
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    const { password, ...other } = user.toObject();
+    console.log(other);
+
+    res.status(200).json(other);
+  })
+);
+
+router.put(
+  "/:id/follow",
+  protectJWT,
+  expressAsyncHandler(async (req: ARequest, res: Response) => {
+    const currentUserID = req.user.id;
+    const targetUserID = req.params.id;
+
+    if (currentUserID == targetUserID) {
+      throw new Error("You can't follow yourself");
+    }
+
+    const currentUser = await User.findById(currentUserID);
+
+    if (currentUser.following.includes(new Types.ObjectId(targetUserID))) {
+      throw new Error("You already follow this user");
+    }
+
+    const targetUser = await User.findById(targetUserID);
+
+    currentUser.following.push(new Types.ObjectId(targetUserID));
+    targetUser.followers.push(new Types.ObjectId(currentUserID));
+
+    await currentUser.save();
+    await targetUser.save();
+
+    res.status(200).json({ msg: "User followed" });
+  })
+);
+
+router.put(
+  "/:id/unfollow",
+  protectJWT,
+  expressAsyncHandler(async (req: ARequest, res: Response) => {
+    const currentUserID = new Types.ObjectId(req.user.id);
+    const targetUserID = new Types.ObjectId(req.params.id);
+
+    if (currentUserID == targetUserID) {
+      throw new Error("You can't unfollow yourself");
+    }
+
+    const currentUser = await User.findById(currentUserID);
+
+    if (!currentUser.following.includes(targetUserID)) {
+      throw new Error("You aren't following this user");
+    }
+
+    const targetUser = await User.findById(targetUserID);
+
+    currentUser.following = currentUser.following.filter(
+      (user) => !user.equals(targetUserID)
+    );
+    targetUser.followers = targetUser.followers.filter(
+      (user) => !user.equals(currentUserID)
+    );
+
+    await currentUser.save();
+    await targetUser.save();
+
+    res.status(200).json({ msg: "User unfollowed" });
   })
 );
 
