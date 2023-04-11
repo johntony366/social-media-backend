@@ -83,4 +83,32 @@ router.put(
   })
 );
 
+router.get("/following", protectJWT, async (req: ARequest, res: Response) => {
+  const { page = 1, pageSize = 10 } = req.body;
+  const userID = req.user.id;
+
+  const user = await User.findById(userID);
+  const posts = await Post.find({ author: { $in: user.following } })
+    .sort({
+      createdAt: "desc",
+    })
+    .skip((Number(page) - 1) * Number(pageSize))
+    .limit(Number(pageSize));
+
+  res.status(200).json({ posts });
+});
+
+router.get("/explore", protectJWT, async (req: ARequest, res: Response) => {
+  const { page = 1, pageSize = 10 } = req.body;
+
+  const posts = await Post.find()
+    .sort({
+      createdAt: "desc",
+    })
+    .skip((Number(page) - 1) * Number(pageSize))
+    .limit(Number(pageSize));
+
+  res.status(200).json({ posts });
+});
+
 export default router;
