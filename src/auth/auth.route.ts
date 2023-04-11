@@ -37,13 +37,42 @@ router.post(
       { expiresIn: "1h" },
       (err, token) => {
         if (err) {
-          console.log(err);
-          res.status(500).send("Server error");
+          throw err;
         }
         res.json({ token });
       }
     );
   })
 );
+
+router.post("/login", async (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  // Check if user exists
+  const user = await User.findOne({ email });
+  if (!user) {
+    return res.status(400).json({ msg: "Invalid credentials" });
+  }
+
+  // Check if password is correct
+  const isMatch = await bcrypt.compare(password, user.password);
+  if (!isMatch) {
+    return res.status(400).json({ msg: "Invalid credentials" });
+  }
+
+  // Create and return JWT
+  const payload = { user: { id: user.id } };
+  jwt.sign(
+    payload,
+    process.env.JWT_SECRET,
+    { expiresIn: "1h" },
+    (err, token) => {
+      if (err) {
+        throw err;
+      }
+      res.json({ token });
+    }
+  );
+});
 
 module.exports = router;
