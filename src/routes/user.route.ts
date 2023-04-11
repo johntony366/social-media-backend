@@ -2,8 +2,9 @@ import { Request, Response } from "express";
 import expressAsyncHandler from "express-async-handler";
 import { ARequest, protectJWT } from "../middleware/auth.middleware";
 import { User } from "../models/user.model";
+import { Router } from "express";
 
-const router = require("express").Router();
+const router = Router();
 
 router.get(
   "/",
@@ -23,4 +24,4 @@ router.get(
   })
 );
 
-module.exports = router;
+export default router;

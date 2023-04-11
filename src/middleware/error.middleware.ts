@@ -1,6 +1,11 @@
 import { Request, Response, NextFunction } from "express";
 
-const errorHandler = (err, req: Request, res: Response, next: NextFunction) => {
+export const errorHandler = (
+  err,
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   const statusCode = res.statusCode ? res.statusCode : 500;
 
   res.status(statusCode);
@@ -9,8 +14,4 @@ const errorHandler = (err, req: Request, res: Response, next: NextFunction) => {
     message: err.message,
     stack: process.env.NODE_ENV === "production" ? null : err.stack,
   });
-};
-
-module.exports = {
-  errorHandler,
 };

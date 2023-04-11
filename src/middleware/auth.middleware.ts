@@ -1,13 +1,13 @@
 import { Request, Response, NextFunction } from "express";
 import { User } from "../models/user.model";
-const jwt = require("jsonwebtoken");
-const asyncHandler = require("express-async-handler");
+import jwt from "jsonwebtoken";
+import expressAsyncHandler from "express-async-handler";
 
 export interface ARequest extends Request {
   user: any;
 }
 
-export const protectJWT = asyncHandler(
+export const protectJWT = expressAsyncHandler(
   async (req: ARequest, res: Response, next: NextFunction) => {
     let token;
 

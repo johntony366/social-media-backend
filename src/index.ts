@@ -1,8 +1,10 @@
-const express = require("express");
-const cors = require("cors");
-const dotenv = require("dotenv");
-const { errorHandler } = require("./middleware/errorHandler.middleware");
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import { errorHandler } from "./middleware/error.middleware";
 import { initDB } from "./db/initDB";
+import authRouter from "./routes/auth.route";
+import userRouter from "./routes/user.route";
 
 const app = express();
 dotenv.config();
@@ -18,8 +20,8 @@ app.use(express.urlencoded({ extended: true }));
 
 initDB();
 
-app.use("/api/auth", require("./auth/auth.route"));
-app.use("/api/user", require("./user/user.route"));
+app.use("/api/auth", authRouter);
+app.use("/api/user", userRouter);
 
 app.use(errorHandler);
 
