@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
+    "build": "npm i && tsc -p tsconfig.json",
     "start": "nodemon --exec ts-node src/index.ts",
     "debug": "nodemon --exec \"node --inspect=0.0.0.0:9229 --require ts-node/register ./src/index.ts\""
   },
