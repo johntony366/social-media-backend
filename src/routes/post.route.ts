@@ -13,7 +13,13 @@ router.get(
   expressAsyncHandler(async (req: ARequest, res: Response) => {
     const userID = new Types.ObjectId(req.user.id);
 
-    const user = await User.findById(userID);
+    const user = await User.findById(userID).populate({
+      path: "posts",
+      populate: {
+        path: "author",
+        select: "-password", // Exclude the password field from the author document
+      },
+    });
     const posts = user.posts;
 
     res.status(200).json(posts);
@@ -32,7 +38,7 @@ router.post(
     await post.save();
     await User.updateOne({ _id: userID }, { $push: { posts: post } });
 
-    res.status(200).json({ msg: "Post created" });
+    res.status(200).json(post);
   })
 );
 
@@ -106,7 +112,8 @@ router.get("/explore", protectJWT, async (req: ARequest, res: Response) => {
       createdAt: "desc",
     })
     .skip((Number(page) - 1) * Number(pageSize))
-    .limit(Number(pageSize));
+    .limit(Number(pageSize))
+    .populate("author", "-password");
 
   res.status(200).json({ posts });
 });
