@@ -11,6 +11,7 @@ router.get(
   "/",
   protectJWT,
   expressAsyncHandler(async (req: ARequest, res: Response) => {
+    const { page = 1, pageSize = 10 } = req.body;
     const userID = new Types.ObjectId(req.user.id);
 
     const user = await User.findById(userID).populate({
@@ -19,7 +20,15 @@ router.get(
         path: "author",
         select: "-password", // Exclude the password field from the author document
       },
+      options: {
+        sort: {
+          createdAt: "desc", // Sort the posts by the createdAt field in descending order
+        },
+        skip: (Number(page) - 1) * Number(pageSize),
+        limit: Number(pageSize),
+      },
     });
+
     const posts = user.posts;
 
     res.status(200).json(posts);
@@ -81,10 +90,12 @@ router.put(
     const post = await Post.findById(id);
     if (post.likes.includes(req.user.id)) {
       await Post.updateOne({ _id: id }, { $pull: { likes: req.user.id } });
-      res.status(200).json({ msg: "Post unliked" });
+      const updatedPost = await Post.findById(id).populate("author");
+      res.status(200).json(updatedPost);
     } else {
       await Post.updateOne({ _id: id }, { $push: { likes: req.user.id } });
-      res.status(200).json({ msg: "Post liked" });
+      const updatedPost = await Post.findById(id).populate("author");
+      res.status(200).json(updatedPost);
     }
   })
 );
@@ -99,7 +110,8 @@ router.get("/following", protectJWT, async (req: ARequest, res: Response) => {
       createdAt: "desc",
     })
     .skip((Number(page) - 1) * Number(pageSize))
-    .limit(Number(pageSize));
+    .limit(Number(pageSize))
+    .populate("author", "-password");
 
   res.status(200).json({ posts });
 });
